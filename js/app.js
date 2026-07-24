@@ -1,7 +1,7 @@
-import * as db from './db.js?v=12';
-import * as audioEngine from './audio.js?v=12';
-import { EMOJI_CATEGORIES } from './emoji-data.js?v=12';
-import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=12';
+import * as db from './db.js?v=13';
+import * as audioEngine from './audio.js?v=13';
+import { EMOJI_CATEGORIES } from './emoji-data.js?v=13';
+import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=13';
 
 let currentEmojiCategory = Object.keys(EMOJI_CATEGORIES)[0];
 

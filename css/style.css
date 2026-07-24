@@ -100,8 +100,9 @@ body.edit-mode-active .btn-fade {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   padding: 4px 12px 8px;
-  gap: 8px;
+  gap: 6px 8px;
 }
 
 .topbar-left, .topbar-right {
@@ -109,6 +110,16 @@ body.edit-mode-active .btn-fade {
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+.topbar-left {
+  flex: 1 1 auto;
+}
+
+.topbar-right {
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .app-title {
