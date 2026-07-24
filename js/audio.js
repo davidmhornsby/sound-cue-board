@@ -5,7 +5,23 @@ const bufferCache = new Map(); // assetId -> Promise<AudioBuffer>
 const active = new Map(); // buttonId -> { source, gain, startedAt, duration, loop, onTick, onEnd }
 let rafHandle = null;
 
+// Safari's newer navigator.audioSession API defaults new pages to type "auto", which
+// lets WebKit heuristically treat short sound-effect-style audio as interruptible
+// "ambient" sound — audible on some devices/OS versions, silently suppressed on others,
+// with no error and no change to AudioContext.state. Forcing "playback" makes this
+// behave like real media playback unconditionally.
+function ensureAudioSessionType() {
+  try {
+    if ('audioSession' in navigator) {
+      navigator.audioSession.type = 'playback';
+    }
+  } catch (_) {
+    /* noop */
+  }
+}
+
 function ensureContext() {
+  ensureAudioSessionType();
   if (!ctx) {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
   }

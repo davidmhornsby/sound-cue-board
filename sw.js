@@ -1,16 +1,16 @@
 // Bumping this also requires updating the matching ?v= query on every <link>/<script>/import
 // in index.html and js/*.js — that's what actually forces browsers to fetch fresh files
 // instead of quietly reusing an old cached copy of one file alongside new ones.
-const CACHE_NAME = 'cue-board-shell-v14';
+const CACHE_NAME = 'cue-board-shell-v15';
 const SHELL_FILES = [
   './',
   './index.html',
-  './css/style.css?v=14',
-  './js/app.js?v=14',
-  './js/db.js?v=14',
-  './js/audio.js?v=14',
-  './js/emoji-data.js?v=14',
-  './js/waveform.js?v=14',
+  './css/style.css?v=15',
+  './js/app.js?v=15',
+  './js/db.js?v=15',
+  './js/audio.js?v=15',
+  './js/emoji-data.js?v=15',
+  './js/waveform.js?v=15',
   './default-show.json',
   './manifest.webmanifest',
   './icons/icon-192.png',
