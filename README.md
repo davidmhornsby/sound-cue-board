@@ -22,6 +22,7 @@ A self-contained, installable web app for triggering sound effects during a live
 - Export/Import a single backup file containing every page, button, sound file, and setting (including trims/fades/fade-out duration)
 - Installs to the iPad Home Screen and works fully offline after the first load
 - Switchable dark/light theme (dark is easier on the eyes backstage)
+- Ships with a **default show** (`default-show.json`) that loads automatically the very first time the app runs on a device with no saved show yet
 
 ## Deploying updates
 
@@ -35,6 +36,15 @@ git push
 ```
 
 GitHub rebuilds the Pages site automatically within about a minute. **Important:** whenever you edit `css/style.css` or any file under `js/`, bump the `?v=N` query on that file everywhere it's referenced — the `<link>`/`<script>` tags in `index.html`, the `import` lines at the top of `js/app.js`, and the `CACHE_NAME` + `SHELL_FILES` list in `sw.js`. Without that bump, the offline service worker (and some browsers/proxies) will keep serving the old file even after you push, since a same-URL request looks unchanged to them. This is what makes updates actually show up instead of silently staying stale.
+
+### Updating the default show
+
+`default-show.json` at the repo root is loaded automatically on any device/browser that has no saved show yet (a genuinely fresh install, or Safari data cleared). To update what ships as the default:
+
+1. Build the show you want as the default inside the app itself.
+2. Open the ☰ menu → **Export Show Backup** — it downloads a `sound-cue-board-backup-*.json` file.
+3. Replace the repo's `default-show.json` with that downloaded file (rename it to exactly `default-show.json`).
+4. Commit and push. Existing installs that already have a saved show are untouched — this only affects new/empty installs.
 
 ## Installing on the iPad
 

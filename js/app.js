@@ -1,7 +1,7 @@
-import * as db from './db.js?v=7';
-import * as audioEngine from './audio.js?v=7';
-import { EMOJI_CATEGORIES } from './emoji-data.js?v=7';
-import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=7';
+import * as db from './db.js?v=8';
+import * as audioEngine from './audio.js?v=8';
+import { EMOJI_CATEGORIES } from './emoji-data.js?v=8';
+import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=8';
 
 let currentEmojiCategory = Object.keys(EMOJI_CATEGORIES)[0];
 
@@ -92,7 +92,7 @@ function activePage() {
 }
 
 async function init() {
-  config = (await db.getConfig()) || defaultConfig();
+  config = (await db.getConfig()) || (await loadDefaultShow());
   if (!config.pages.find((p) => p.id === config.activePageId)) {
     config.activePageId = config.pages[0].id;
   }
@@ -102,6 +102,23 @@ async function init() {
   renderGrid();
   wireStaticEvents();
   updateFadeDurLabel();
+}
+
+// First-ever launch (no saved config yet): seed the board from the bundled default
+// show so new installs aren't a blank slate, instead of the empty single-page template.
+async function loadDefaultShow() {
+  try {
+    const res = await fetch('./default-show.json');
+    if (!res.ok) throw new Error('no default-show.json');
+    const payload = await res.json();
+    for (const [id, asset] of Object.entries(payload.assets || {})) {
+      await db.putAsset(id, base64ToBlob(asset.data, asset.type));
+    }
+    await db.saveConfig(payload.config);
+    return payload.config;
+  } catch (_) {
+    return defaultConfig();
+  }
 }
 
 function updateFadeDurLabel() {
