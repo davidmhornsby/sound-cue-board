@@ -184,3 +184,26 @@ export function unlockOnGesture() {
     /* noop */
   }
 }
+
+// On-device diagnostics — lets someone read the real AudioContext state directly off
+// their screen when there's no way to attach a debugger (e.g. an iPhone with no Mac handy).
+export function getContextInfo() {
+  const c = ensureContext();
+  return { state: c.state, sampleRate: c.sampleRate, baseLatency: c.baseLatency };
+}
+
+// A pure oscillator tone, no file decoding involved — isolates whether Web Audio can
+// produce ANY sound at all on this device from whether the problem is specific to
+// decoding/playing back a particular audio file.
+export function playTestTone() {
+  const c = ensureContext();
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.frequency.value = 440;
+  gain.gain.value = 0.3;
+  osc.connect(gain).connect(c.destination);
+  const now = c.currentTime;
+  osc.start(now);
+  osc.stop(now + 0.6);
+  return getContextInfo();
+}

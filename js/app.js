@@ -1,7 +1,7 @@
-import * as db from './db.js?v=11';
-import * as audioEngine from './audio.js?v=11';
-import { EMOJI_CATEGORIES } from './emoji-data.js?v=11';
-import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=11';
+import * as db from './db.js?v=12';
+import * as audioEngine from './audio.js?v=12';
+import { EMOJI_CATEGORIES } from './emoji-data.js?v=12';
+import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=12';
 
 let currentEmojiCategory = Object.keys(EMOJI_CATEGORIES)[0];
 
@@ -34,6 +34,8 @@ const el = {
 
   menuOverlay: document.getElementById('menuOverlay'),
   closeMenuBtn: document.getElementById('closeMenuBtn'),
+  testToneBtn: document.getElementById('testToneBtn'),
+  audioDiagInfo: document.getElementById('audioDiagInfo'),
   exportBtn: document.getElementById('exportBtn'),
   importBtn: document.getElementById('importBtn'),
   importFile: document.getElementById('importFile'),
@@ -139,6 +141,11 @@ async function loadDefaultShow() {
 
 function updateFadeDurLabel() {
   el.fadeDurLabel.textContent = `${(Number.isFinite(config.fadeOutDuration) ? config.fadeOutDuration : 2).toFixed(1)}s`;
+}
+
+function showAudioDiagInfo(info) {
+  const i = info || audioEngine.getContextInfo();
+  el.audioDiagInfo.textContent = `Audio engine: ${i.state} @ ${i.sampleRate}Hz (latency ${(i.baseLatency ?? 0).toFixed(3)}s). If Test Tone is silent too, the problem is this device/browser, not a specific sound file.`;
 }
 
 let fadeBtnAnimHandle = null;
@@ -373,7 +380,10 @@ async function playButton(button) {
       },
       onEnd: () => setTilePlayingVisual(button.id, { playing: false, looping: false, text: '', progressPct: 0 }),
     }
-  );
+  ).catch((err) => {
+    setTilePlayingVisual(button.id, { playing: false, looping: false, text: '', progressPct: 0 });
+    alert(`Couldn't play "${button.name}": ${err?.message || err}`);
+  });
 }
 
 // ---------- Drag reorder (edit mode only) ----------
@@ -855,8 +865,17 @@ function hide(overlay) { overlay.classList.add('hidden'); }
 
 // ---------- Static event wiring ----------
 function wireStaticEvents() {
-  el.menuBtn.onclick = () => show(el.menuOverlay);
+  el.menuBtn.onclick = () => {
+    showAudioDiagInfo();
+    show(el.menuOverlay);
+  };
   el.closeMenuBtn.onclick = () => hide(el.menuOverlay);
+  el.testToneBtn.onclick = () => {
+    primeIOSAudio();
+    audioEngine.unlockOnGesture();
+    const info = audioEngine.playTestTone();
+    showAudioDiagInfo(info);
+  };
   el.menuOverlay.addEventListener('click', (e) => { if (e.target === el.menuOverlay) hide(el.menuOverlay); });
 
   function adjustFadeDuration(delta) {
