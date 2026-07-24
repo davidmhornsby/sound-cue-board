@@ -1,7 +1,7 @@
-import * as db from './db.js?v=8';
-import * as audioEngine from './audio.js?v=8';
-import { EMOJI_CATEGORIES } from './emoji-data.js?v=8';
-import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=8';
+import * as db from './db.js?v=9';
+import * as audioEngine from './audio.js?v=9';
+import { EMOJI_CATEGORIES } from './emoji-data.js?v=9';
+import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=9';
 
 let currentEmojiCategory = Object.keys(EMOJI_CATEGORIES)[0];
 
@@ -96,7 +96,10 @@ async function init() {
   if (!config.pages.find((p) => p.id === config.activePageId)) {
     config.activePageId = config.pages[0].id;
   }
-  if (config.fadeOutDuration == null) config.fadeOutDuration = 2;
+  if (!Number.isFinite(config.fadeOutDuration)) {
+    config.fadeOutDuration = 2;
+    persist();
+  }
   applyTheme();
   renderTabs();
   renderGrid();
@@ -122,7 +125,7 @@ async function loadDefaultShow() {
 }
 
 function updateFadeDurLabel() {
-  el.fadeDurLabel.textContent = `${config.fadeOutDuration.toFixed(1)}s`;
+  el.fadeDurLabel.textContent = `${(Number.isFinite(config.fadeOutDuration) ? config.fadeOutDuration : 2).toFixed(1)}s`;
 }
 
 let fadeBtnAnimHandle = null;
@@ -843,7 +846,8 @@ function wireStaticEvents() {
   el.menuOverlay.addEventListener('click', (e) => { if (e.target === el.menuOverlay) hide(el.menuOverlay); });
 
   function adjustFadeDuration(delta) {
-    const next = Math.round((config.fadeOutDuration + delta) * 10) / 10;
+    const current = Number.isFinite(config.fadeOutDuration) ? config.fadeOutDuration : 2;
+    const next = Math.round((current + delta) * 10) / 10;
     config.fadeOutDuration = Math.min(5, Math.max(0.5, next));
     updateFadeDurLabel();
     persist();
@@ -868,7 +872,7 @@ function wireStaticEvents() {
 
   el.panicBtn.onclick = () => audioEngine.stopAll();
   el.fadeStopBtn.onclick = () => {
-    const duration = config.fadeOutDuration ?? 2;
+    const duration = Number.isFinite(config.fadeOutDuration) ? config.fadeOutDuration : 2;
     audioEngine.fadeOutAndStopAll(duration);
     runFadeButtonAnimation(duration);
   };
