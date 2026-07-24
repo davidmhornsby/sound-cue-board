@@ -163,6 +163,24 @@ export function fadeOutAndStopAll(durationSec) {
   }
 }
 
+let unlocked = false;
+
+// iOS Safari's Web Audio output can stay silently muted even after resume() reports
+// "running" — no error, no visual difference, sound just never reaches the speaker —
+// unless a real source has actually been started on this exact context during a user
+// gesture. Playing a silent buffer synchronously here (not awaited, not decoded) is the
+// standard reliable unlock for that.
 export function unlockOnGesture() {
-  ensureContext();
+  const c = ensureContext();
+  if (unlocked) return;
+  unlocked = true;
+  try {
+    const buffer = c.createBuffer(1, 1, 22050);
+    const source = c.createBufferSource();
+    source.buffer = buffer;
+    source.connect(c.destination);
+    source.start(0);
+  } catch (_) {
+    /* noop */
+  }
 }
