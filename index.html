@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#0f1115" />
+<title>Sound Cue Board</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css?v=7" />
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="topbar-left">
+        <button id="menuBtn" class="icon-btn" aria-label="Menu" title="Show settings">☰</button>
+        <h1 class="app-title">Sound Cue Board</h1>
+      </div>
+      <div class="topbar-right">
+        <button id="editModeBtn" class="toggle-pill" aria-pressed="false">Edit Mode</button>
+        <button id="themeBtn" class="icon-btn" aria-label="Toggle theme" title="Toggle theme">🌙</button>
+        <div class="fade-group">
+          <button id="fadeStopBtn" class="btn-fade" aria-label="Fade out and stop all sounds" title="Fade out and stop all sounds">
+            <span id="fadeBtnProgress" class="fade-btn-progress"></span>
+            <span id="fadeBtnLabel" class="fade-btn-label">⤵ FADE OUT</span>
+          </button>
+          <div class="fade-stepper" role="group" aria-label="Fade out duration">
+            <button type="button" id="fadeDurDecBtn" class="fade-step-btn" aria-label="Decrease fade duration">−</button>
+            <span id="fadeDurLabel" class="fade-dur-label">2.0s</span>
+            <button type="button" id="fadeDurIncBtn" class="fade-step-btn" aria-label="Increase fade duration">+</button>
+          </div>
+        </div>
+        <button id="panicBtn" class="btn-panic" aria-label="Stop all sounds">■ STOP ALL</button>
+      </div>
+    </div>
+    <nav id="pageTabs" class="page-tabs"></nav>
+  </header>
+
+  <main id="grid" class="grid"></main>
+  <p id="emptyHint" class="empty-hint hidden">Turn on Edit Mode, then tap + to add your first sound button.</p>
+</div>
+
+<div id="menuOverlay" class="overlay hidden">
+  <div class="drawer" role="dialog" aria-label="Show settings">
+    <h2>Show Settings</h2>
+
+    <button id="exportBtn" class="btn">⬇ Export Show Backup</button>
+    <button id="importBtn" class="btn">⬆ Import Show Backup</button>
+    <input id="importFile" type="file" accept="application/json" class="hidden-input" />
+    <p class="hint">Backups include every page, button, and sound file. Keep one somewhere safe in case this iPad's storage is ever cleared.</p>
+    <hr />
+    <button id="closeMenuBtn" class="btn btn-secondary">Close</button>
+  </div>
+</div>
+
+<div id="buttonModal" class="overlay hidden">
+  <div class="modal" role="dialog" aria-label="Edit sound button">
+    <h2 id="buttonModalTitle">Edit Sound</h2>
+
+    <label class="field">Name
+      <input id="btnName" type="text" maxlength="40" placeholder="e.g. Doorbell" />
+    </label>
+
+    <div class="field icon-picker">
+      <span class="field-label">Icon</span>
+      <div class="icon-tabs">
+        <button type="button" class="icon-tab active" data-icon-mode="emoji">Emoji</button>
+        <button type="button" class="icon-tab" data-icon-mode="image">Image</button>
+      </div>
+      <div id="emojiPane" class="icon-pane">
+        <input id="btnEmoji" type="text" maxlength="4" placeholder="🔔" />
+        <div class="emoji-cat-tabs" id="emojiCatTabs"></div>
+        <div class="emoji-presets" id="emojiPresets"></div>
+      </div>
+      <div id="imagePane" class="icon-pane hidden">
+        <img id="imagePreview" class="image-preview hidden" alt="Icon preview" />
+        <input id="btnImageFile" type="file" accept="image/*" />
+      </div>
+    </div>
+
+    <label class="field">Color
+      <input id="btnColor" type="color" value="#3a6ea5" />
+    </label>
+
+    <label class="field">Sound file (mp3, wav, m4a…)
+      <input id="btnAudioFile" type="file" accept="audio/*" />
+    </label>
+    <div id="audioInfo" class="audio-info"></div>
+    <button type="button" id="previewPlayBtn" class="btn btn-secondary" disabled>▶ Preview sound</button>
+
+    <div class="field trim-field">
+      <span class="field-label">Trim audio <span id="trimInfo" class="trim-info"></span></span>
+      <canvas id="trimCanvas" class="trim-canvas" height="64"></canvas>
+      <button type="button" id="resetTrimBtn" class="btn btn-secondary trim-reset-btn">Reset trim to full length</button>
+
+      <div class="fade-controls">
+        <label class="fade-control">Fade in <span id="fadeInValue">0.0s</span>
+          <input id="fadeInRange" type="range" min="0" max="5" step="0.1" value="0" />
+        </label>
+        <label class="fade-control">Fade out <span id="fadeOutValue">0.0s</span>
+          <input id="fadeOutRange" type="range" min="0" max="5" step="0.1" value="0" />
+        </label>
+        <p class="hint">Fade out only applies to sounds that aren't looping.</p>
+      </div>
+    </div>
+
+    <label class="field">Volume <span id="volumeValue">100%</span>
+      <input id="btnVolume" type="range" min="0" max="100" value="100" />
+    </label>
+
+    <label class="field switch-row">
+      <span>Loop until stopped</span>
+      <input id="btnLoop" type="checkbox" />
+    </label>
+
+    <div class="modal-actions">
+      <button id="deleteBtnBtn" class="btn btn-danger">Delete</button>
+      <div class="spacer"></div>
+      <button id="cancelBtnBtn" class="btn btn-secondary">Cancel</button>
+      <button id="saveBtnBtn" class="btn btn-primary">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="pageModal" class="overlay hidden">
+  <div class="modal modal-small" role="dialog" aria-label="Edit page">
+    <h2 id="pageModalTitle">New Page</h2>
+    <label class="field">Page name
+      <input id="pageName" type="text" maxlength="30" placeholder="e.g. Act 1" />
+    </label>
+    <div class="modal-actions">
+      <button id="deletePageBtn" class="btn btn-danger">Delete Page</button>
+      <div class="spacer"></div>
+      <button id="cancelPageBtn" class="btn btn-secondary">Cancel</button>
+      <button id="savePageBtn" class="btn btn-primary">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirmModal" class="overlay hidden">
+  <div class="modal modal-small" role="alertdialog" aria-label="Confirm">
+    <p id="confirmMessage"></p>
+    <div class="modal-actions">
+      <div class="spacer"></div>
+      <button id="confirmCancelBtn" class="btn btn-secondary">Cancel</button>
+      <button id="confirmOkBtn" class="btn btn-danger">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<audio id="previewAudio" class="hidden"></audio>
+
+<script type="module" src="js/app.js?v=7"></script>
+</body>
+</html>
