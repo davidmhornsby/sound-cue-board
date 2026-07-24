@@ -2,39 +2,39 @@
 
 A self-contained, installable web app for triggering sound effects during a live play from an iPad. No app store, no account, no internet connection required once installed. All sounds, images, and show layout are stored on the device itself.
 
+**Live URL:** https://davidmhornsby.github.io/sound-cue-board/
+**Repo:** https://github.com/davidmhornsby/sound-cue-board
+
 ## Features
 
 - Multiple pages (e.g. "Act 1", "Act 2") of sound buttons
 - Upload any playable audio file (mp3, wav, m4a, etc.) per button
 - Custom emoji or uploaded image icon per button, plus a color
-- Tap to play; live countdown (e.g. `2.4s`) shown on the button while it plays
+- Tap to play; live countdown shown on the button, with a top progress bar that fills at 100% instantly and depletes to 0% as the sound plays
 - Sounds can overlap — different buttons can play at the same time
+- A **STOP** button appears on any playing tile to stop just that sound
+- **Trim audio** per sound — drag handles on a waveform to pick the exact start/end of the clip
+- **Fade in / fade out** per sound — set ramp times on the trim waveform; the envelope is drawn right on it
 - Per-button volume and an optional loop (tap once to start looping, tap again to stop)
-- **STOP ALL** panic button to instantly silence everything
-- **Edit Mode** lock — normal taps just play sounds; flip on Edit Mode to rename buttons, change icons/colors/audio, reorder (long-press and drag), and manage pages
-- Export/Import a single backup file containing every page, button, and audio file
+- **STOP ALL** panic button for an instant hard stop
+- **FADE OUT** button — gracefully fades every playing sound to silence over a configurable 0.5–5s duration (adjustable right on the button), with a live countdown and depleting background showing fade progress
+- **Edit Mode** lock — normal taps just play sounds; flip on Edit Mode (header turns amber/black hazard stripes so it's unmistakable) to rename buttons, change icons/colors/audio, reorder (long-press and drag), and manage pages
+- Export/Import a single backup file containing every page, button, sound file, and setting (including trims/fades/fade-out duration)
 - Installs to the iPad Home Screen and works fully offline after the first load
 - Switchable dark/light theme (dark is easier on the eyes backstage)
 
-## Deploying so it's installable on the iPad
+## Deploying updates
 
-The app is just static files (no server-side code), so any static host works. GitHub Pages is free and simple:
+This repo is already deployed via GitHub Pages from the `main` branch. To ship a change:
 
-1. Create a new **private or public** GitHub repository (e.g. `sound-cue-board`).
-2. From this folder, initialize git and push:
-   ```bash
-   cd "sound-cue-board"
-   git init
-   git add -A
-   git commit -m "Initial sound cue board"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/sound-cue-board.git
-   git push -u origin main
-   ```
-3. On GitHub: **Settings → Pages** → under "Build and deployment", set Source to **Deploy from a branch**, branch `main`, folder `/ (root)`. Save.
-4. After a minute, GitHub gives you a URL like `https://<your-username>.github.io/sound-cue-board/`.
+```bash
+cd sound-cue-board
+git add -A
+git commit -m "describe the change"
+git push
+```
 
-(Netlify or Vercel work the same way if you'd rather drag-and-drop the folder — just make sure the site is served over **https**, which all of these provide automatically.)
+GitHub rebuilds the Pages site automatically within about a minute. **Important:** whenever you edit `css/style.css` or any file under `js/`, bump the `?v=N` query on that file everywhere it's referenced — the `<link>`/`<script>` tags in `index.html`, the `import` lines at the top of `js/app.js`, and the `CACHE_NAME` + `SHELL_FILES` list in `sw.js`. Without that bump, the offline service worker (and some browsers/proxies) will keep serving the old file even after you push, since a same-URL request looks unchanged to them. This is what makes updates actually show up instead of silently staying stale.
 
 ## Installing on the iPad
 
