@@ -40,6 +40,8 @@ html, body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh; /* accounts for mobile browser toolbars that resize the viewport; ignored where unsupported */
+  width: 100%;
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
 }
@@ -288,7 +290,10 @@ body.edit-mode-active .fade-dur-label {
 
 /* ---------- Grid ---------- */
 .grid {
-  flex: 1;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
