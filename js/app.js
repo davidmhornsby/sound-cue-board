@@ -1,9 +1,21 @@
-import * as db from './db.js?v=9';
-import * as audioEngine from './audio.js?v=9';
-import { EMOJI_CATEGORIES } from './emoji-data.js?v=9';
-import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=9';
+import * as db from './db.js?v=10';
+import * as audioEngine from './audio.js?v=10';
+import { EMOJI_CATEGORIES } from './emoji-data.js?v=10';
+import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=10';
 
 let currentEmojiCategory = Object.keys(EMOJI_CATEGORIES)[0];
+
+// iOS Safari can leave the Web Audio API's output silently muted — no errors, no visual
+// difference, sound just never reaches the speaker — unless a plain HTMLMediaElement has
+// played something first, in the same tap. This primes that once per page load.
+const SILENT_WAV_DATA_URI = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
+let audioPrimed = false;
+function primeIOSAudio() {
+  if (audioPrimed) return;
+  audioPrimed = true;
+  el.unlockAudio.src = SILENT_WAV_DATA_URI;
+  el.unlockAudio.play().catch(() => {});
+}
 
 const el = {
   grid: document.getElementById('grid'),
@@ -41,6 +53,7 @@ const el = {
   audioInfo: document.getElementById('audioInfo'),
   previewPlayBtn: document.getElementById('previewPlayBtn'),
   previewAudio: document.getElementById('previewAudio'),
+  unlockAudio: document.getElementById('unlockAudio'),
   trimCanvas: document.getElementById('trimCanvas'),
   trimInfo: document.getElementById('trimInfo'),
   resetTrimBtn: document.getElementById('resetTrimBtn'),
@@ -331,6 +344,7 @@ function setTilePlayingVisual(buttonId, { playing, looping, text, progressPct })
 
 async function playButton(button) {
   if (!button.audioAssetId) return;
+  primeIOSAudio();
   audioEngine.unlockOnGesture();
   const blob = await db.getAsset(button.audioAssetId);
   if (!blob) return;
