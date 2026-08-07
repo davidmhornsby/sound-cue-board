@@ -57,7 +57,7 @@ If you ever update the deployed files, re-open the app once while online so it c
 ## Using it for a show
 
 - **Building your show**: tap **Edit Mode**, then **+** to add a sound button — give it a name, an emoji or image, a color, and a sound file. Add more pages with **+ Page** in the page bar (e.g. one per act).
-- **Reordering**: while in Edit Mode, press and hold a button for about a third of a second, then drag it to a new spot.
+- **Reordering**: while in Edit Mode, either press and hold a button for about a third of a second and drag it to a new spot, or use the ‹ › arrows in its bottom corners to nudge it one position at a time.
 - **Running the show**: turn **Edit Mode** off. Tapping a button plays its sound and shows a live countdown. Looping buttons show an elapsed time with a 🔁 icon — tap them again to stop. **STOP ALL** kills every currently playing sound instantly.
 - **Backups**: open the ☰ menu → **Export Show Backup** to download one file with everything in it. Keep a copy somewhere safe (email it to yourself, save it to Files/iCloud). **Import Show Backup** restores from that file onto any iPad — handy if you get a replacement device or want to hand the show off to another operator's iPad.
 

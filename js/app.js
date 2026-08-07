@@ -1,7 +1,7 @@
-import * as db from './db.js?v=15';
-import * as audioEngine from './audio.js?v=15';
-import { EMOJI_CATEGORIES } from './emoji-data.js?v=15';
-import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=15';
+import * as db from './db.js?v=17';
+import * as audioEngine from './audio.js?v=17';
+import { EMOJI_CATEGORIES } from './emoji-data.js?v=17';
+import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=17';
 
 let currentEmojiCategory = Object.keys(EMOJI_CATEGORIES)[0];
 
@@ -245,6 +245,16 @@ function movePage(idx, dir) {
   renderTabs();
 }
 
+function moveButton(idx, dir) {
+  const page = activePage();
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= page.buttons.length) return;
+  const [button] = page.buttons.splice(idx, 1);
+  page.buttons.splice(newIdx, 0, button);
+  persist();
+  renderGrid();
+}
+
 // ---------- Grid ----------
 async function getImageUrl(assetId) {
   if (imageUrlCache.has(assetId)) return imageUrlCache.get(assetId);
@@ -260,7 +270,7 @@ function renderGrid() {
   el.grid.innerHTML = '';
   el.emptyHint.classList.toggle('hidden', !(editMode && page.buttons.length === 0));
 
-  page.buttons.forEach((button) => {
+  page.buttons.forEach((button, idx) => {
     const tile = document.createElement('button');
     tile.type = 'button';
     tile.className = 'tile';
@@ -309,6 +319,28 @@ function renderGrid() {
       badge.className = 'tile-edit-badge';
       badge.textContent = '✎';
       tile.appendChild(badge);
+
+      const moveControls = document.createElement('span');
+      moveControls.className = 'tile-move-controls';
+
+      const moveLeft = document.createElement('button');
+      moveLeft.type = 'button';
+      moveLeft.className = 'tile-move-btn';
+      moveLeft.textContent = '‹';
+      moveLeft.setAttribute('aria-label', `Move ${button.name || 'sound'} earlier`);
+      moveLeft.disabled = idx === 0;
+      moveLeft.addEventListener('click', (e) => { e.stopPropagation(); moveButton(idx, -1); });
+
+      const moveRight = document.createElement('button');
+      moveRight.type = 'button';
+      moveRight.className = 'tile-move-btn';
+      moveRight.textContent = '›';
+      moveRight.setAttribute('aria-label', `Move ${button.name || 'sound'} later`);
+      moveRight.disabled = idx === page.buttons.length - 1;
+      moveRight.addEventListener('click', (e) => { e.stopPropagation(); moveButton(idx, 1); });
+
+      moveControls.append(moveLeft, moveRight);
+      tile.appendChild(moveControls);
     }
 
     tile.addEventListener('click', (e) => {

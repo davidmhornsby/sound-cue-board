@@ -31,13 +31,19 @@ function drawWaveform(canvas, peaks, { trimStartFrac, trimEndFrac, duration, fad
   const mid = h / 2;
   const barWidth = w / peaks.length;
 
+  // Bars are drawn in the theme's text color (dark-on-light or light-on-dark) rather
+  // than a hardcoded white, since a fixed white is invisible against a white canvas
+  // background in light theme.
+  const barColor = (getComputedStyle(canvas).getPropertyValue('--text') || '#f2f2f2').trim();
   for (let i = 0; i < peaks.length; i++) {
     const frac = i / peaks.length;
     const inRange = frac >= trimStartFrac && frac <= trimEndFrac;
-    ctx.fillStyle = inRange ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.25)';
+    ctx.globalAlpha = inRange ? 0.9 : 0.3;
+    ctx.fillStyle = barColor;
     const barH = Math.max(2, peaks[i] * (h - 8));
     ctx.fillRect(i * barWidth, mid - barH / 2, Math.max(1, barWidth - 1), barH);
   }
+  ctx.globalAlpha = 1;
 
   ctx.fillStyle = 'rgba(0,0,0,0.55)';
   ctx.fillRect(0, 0, trimStartFrac * w, h);

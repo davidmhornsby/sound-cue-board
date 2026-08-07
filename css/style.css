@@ -416,6 +416,39 @@ body.edit-mode-active .fade-dur-label {
   padding: 3px 6px;
 }
 
+.tile-move-controls {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.tile-move-btn {
+  pointer-events: auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tile-move-btn:active:not(:disabled) {
+  background: rgba(0, 0, 0, 0.7);
+}
+.tile-move-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
 .tile.dragging {
   opacity: 0.85;
   z-index: 20;
