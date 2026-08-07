@@ -22,7 +22,7 @@ A self-contained, installable web app for triggering sound effects during a live
 - Export/Import a single backup file containing every page, button, sound file, and setting (including trims/fades/fade-out duration)
 - Installs to the iPad Home Screen and works fully offline after the first load
 - Switchable dark/light theme (dark is easier on the eyes backstage)
-- Ships with a **default show** (`default-show.json`) that loads automatically the very first time the app runs on a device with no saved show yet
+- Ships with a **default show** (`default-show.json`) that loads automatically the very first time the app runs on a device with no saved show yet — or on demand any time via ☰ menu → **Load Default Show**, or by visiting `/default` on the site
 
 ## Deploying updates
 
@@ -44,7 +44,9 @@ GitHub rebuilds the Pages site automatically within about a minute. **Important:
 1. Build the show you want as the default inside the app itself.
 2. Open the ☰ menu → **Export Show Backup** — it downloads a `sound-cue-board-backup-*.json` file.
 3. Replace the repo's `default-show.json` with that downloaded file (rename it to exactly `default-show.json`).
-4. Commit and push. Existing installs that already have a saved show are untouched — this only affects new/empty installs.
+4. Commit and push. Existing installs that already have a saved show are untouched by a fresh page load — they only pick up the new default if someone explicitly resets via ☰ → **Load Default Show**, or visits `/default`.
+
+**Resetting an existing device to the default show**: open ☰ menu → **Load Default Show** (asks for confirmation, then replaces everything on that device). Or visit `https://davidmhornsby.github.io/sound-cue-board/default` directly — it redirects to the main app with a flag that loads the default immediately, no confirmation prompt (visiting that specific URL is itself the deliberate action). Handy to bookmark or share as a one-tap reset link.
 
 ## Installing on the iPad
 

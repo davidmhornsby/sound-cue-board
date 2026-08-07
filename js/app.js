@@ -1,7 +1,7 @@
-import * as db from './db.js?v=17';
-import * as audioEngine from './audio.js?v=17';
-import { EMOJI_CATEGORIES } from './emoji-data.js?v=17';
-import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=17';
+import * as db from './db.js?v=18';
+import * as audioEngine from './audio.js?v=18';
+import { EMOJI_CATEGORIES } from './emoji-data.js?v=18';
+import { decodeForWaveform, computePeaks, createTrimEditor } from './waveform.js?v=18';
 
 let currentEmojiCategory = Object.keys(EMOJI_CATEGORIES)[0];
 
@@ -39,6 +39,7 @@ const el = {
   exportBtn: document.getElementById('exportBtn'),
   importBtn: document.getElementById('importBtn'),
   importFile: document.getElementById('importFile'),
+  loadDefaultBtn: document.getElementById('loadDefaultBtn'),
 
   buttonModal: document.getElementById('buttonModal'),
   buttonModalTitle: document.getElementById('buttonModalTitle'),
@@ -107,28 +108,49 @@ function activePage() {
 }
 
 async function init() {
-  config = (await db.getConfig()) || (await loadDefaultShow());
-  if (!config.pages.find((p) => p.id === config.activePageId)) {
-    config.activePageId = config.pages[0].id;
+  // ?loadDefault=1 (e.g. via the /default shortcut URL) forces the bundled default show
+  // to load over whatever's already saved — visiting that URL is itself the deliberate
+  // action, so no confirmation prompt.
+  const forceDefault = new URLSearchParams(location.search).has('loadDefault');
+  const forced = forceDefault && (await tryForceLoadDefault());
+
+  if (!forced) {
+    config = (await db.getConfig()) || (await loadDefaultShow());
+    if (!config.pages.find((p) => p.id === config.activePageId)) {
+      config.activePageId = config.pages[0].id;
+    }
+    applyTheme();
+    renderTabs();
+    renderGrid();
   }
   if (!Number.isFinite(config.fadeOutDuration)) {
     config.fadeOutDuration = 2;
     persist();
   }
-  applyTheme();
-  renderTabs();
-  renderGrid();
   wireStaticEvents();
   updateFadeDurLabel();
+}
+
+async function fetchDefaultPayload() {
+  const res = await fetch('./default-show.json');
+  if (!res.ok) throw new Error('no default-show.json');
+  return res.json();
+}
+
+async function tryForceLoadDefault() {
+  try {
+    await applyImportedPayload(await fetchDefaultPayload());
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 // First-ever launch (no saved config yet): seed the board from the bundled default
 // show so new installs aren't a blank slate, instead of the empty single-page template.
 async function loadDefaultShow() {
   try {
-    const res = await fetch('./default-show.json');
-    if (!res.ok) throw new Error('no default-show.json');
-    const payload = await res.json();
+    const payload = await fetchDefaultPayload();
     for (const [id, asset] of Object.entries(payload.assets || {})) {
       await db.putAsset(id, base64ToBlob(asset.data, asset.type));
     }
@@ -863,6 +885,20 @@ async function exportShow() {
   URL.revokeObjectURL(url);
 }
 
+async function applyImportedPayload(payload) {
+  audioEngine.stopAll();
+  imageUrlCache.clear();
+  await db.clearAll();
+  for (const [id, asset] of Object.entries(payload.assets || {})) {
+    await db.putAsset(id, base64ToBlob(asset.data, asset.type));
+  }
+  await db.saveConfig(payload.config);
+  config = payload.config;
+  applyTheme();
+  renderTabs();
+  renderGrid();
+}
+
 async function importShowFile(file) {
   let payload;
   try {
@@ -876,18 +912,19 @@ async function importShowFile(file) {
     return;
   }
   askConfirm('Import this backup? It will replace everything currently on this iPad.', async () => {
-    audioEngine.stopAll();
-    imageUrlCache.clear();
-    await db.clearAll();
-    for (const [id, asset] of Object.entries(payload.assets || {})) {
-      await db.putAsset(id, base64ToBlob(asset.data, asset.type));
-    }
-    await db.saveConfig(payload.config);
-    config = payload.config;
-    applyTheme();
-    renderTabs();
-    renderGrid();
+    await applyImportedPayload(payload);
     hide(el.menuOverlay);
+  });
+}
+
+async function loadBundledDefaultShow() {
+  askConfirm('Load the built-in default show? It will replace everything currently saved on this device.', async () => {
+    try {
+      await applyImportedPayload(await fetchDefaultPayload());
+      hide(el.menuOverlay);
+    } catch (_) {
+      alert('Could not load the default show.');
+    }
   });
 }
 
@@ -949,6 +986,7 @@ function wireStaticEvents() {
     if (file) importShowFile(file);
     el.importFile.value = '';
   };
+  el.loadDefaultBtn.onclick = loadBundledDefaultShow;
 
   document.querySelectorAll('.icon-tab').forEach((tab) => {
     tab.onclick = () => setIconMode(tab.dataset.iconMode);

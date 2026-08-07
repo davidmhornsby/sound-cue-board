@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
 <link rel="icon" href="icons/icon-192.png" />
-<link rel="stylesheet" href="css/style.css?v=17" />
+<link rel="stylesheet" href="css/style.css?v=18" />
 </head>
 <body>
 <div id="app">
@@ -53,6 +53,9 @@
     <button id="importBtn" class="btn">⬆ Import Show Backup</button>
     <input id="importFile" type="file" accept="application/json" class="hidden-input" />
     <p class="hint">Backups include every page, button, and sound file. Keep one somewhere safe in case this iPad's storage is ever cleared.</p>
+    <hr />
+    <button id="loadDefaultBtn" class="btn">↻ Load Default Show</button>
+    <p class="hint">Replaces everything on this device with the built-in default show. Useful for resetting a device or bringing it in line with the latest default.</p>
     <hr />
     <button id="testToneBtn" class="btn">🔊 Play Test Tone</button>
     <p id="audioDiagInfo" class="hint"></p>
@@ -159,6 +162,6 @@
 <audio id="previewAudio" class="hidden"></audio>
 <audio id="unlockAudio" class="hidden" playsinline webkit-playsinline="true"></audio>
 
-<script type="module" src="js/app.js?v=17"></script>
+<script type="module" src="js/app.js?v=18"></script>
 </body>
 </html>
